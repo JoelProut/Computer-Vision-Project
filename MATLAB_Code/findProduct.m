@@ -29,12 +29,12 @@ scenePoints = detectSURFFeatures(scene);
 %Strongest template features
 figure, imshow(template), title('100 Strongest Feature Points')
 hold on;
-plot(selectStrongest(tempPoints, 100));
+plot(tempPoints.selectStrongest(100));
 hold off;
 %Strongest scene features
 figure, imshow(scene), title('500 Strongest Scene Points')
 hold on;
-plot(selectStrongest(scenePoints, 500));
+plot(scenePoints.selectStrongest(500));
 hold off;
 
 %% Feature Descriptors
@@ -46,8 +46,27 @@ matchedScenePoints = scenePoints(featurePairs(:,2),:);
 figure, showMatchedFeatures(template, scene, matchedTempPoints, matchedScenePoints, 'montage');
 title('Matched Points with Outliers');
 %% Locate object and remove outlying matches
-[tform, inlierTempPoints, inlierScenePoints] = estimateGeometricTransform(matchedTempPoints, matchedScenePoints, 'affine');
+[tform, inlierTempPoints, inlierScenePoints] = estimateGeometricTransform(matchedTempPoints, matchedScenePoints, 'affine', 'MaxNumTrials',2000,'MaxDistance',16);
 figure, showMatchedFeatures(template, scene, inlierTempPoints, inlierScenePoints, 'montage');
-%% Box image
+ %% Box image
+% Edge detection
+S = strel('disk',15);
+I2 = imopen(template,S);  
+E = edge(I2, 'canny',.2,1);
+%Find bb
+[L,N] = bwlabel(E);
+props = regionprops(L,'all');
+bb = props.BoundingBox; %[x,y,w,h]
+%convert bb to line coordinates
+boundingBox = [bb(1), bb(2); bb(1) + bb(3), bb(2); bb(1) + bb(3), bb(2) + bb(4); bb(1), bb(2) + bb(4); bb(1), bb(2)]; %[x1,y1; x2, y1; x2, y2; x1,y1; x1,y1]
+newbb = transformPointsForward(tform, boundingBox); % Use the geometric transform to project the bounding box into the scene image
+
+imshow(scene);
+disp(newbb(:,1));
+hold on;
+line(newbb(:,1), newbb(:,2), 'Color', 'r');
+title('Detected Box');
+ 
+
 
 end
