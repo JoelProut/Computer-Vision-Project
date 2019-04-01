@@ -2,7 +2,7 @@ clc; clear all; close all;
 %Capture Test
 webcamlist
 %Type in name from list
-camName = 'USB2.0 PC CAMERA';
+camName = 'Integrated Webcam';
 %Create a webcam object
 cam = webcam(camName);
 %view camera live feed
@@ -10,11 +10,11 @@ cam = webcam(camName);
 
 found = false;
 
-userInput = input("Enter Fruit or Cereal: ");
+userInput = input("Enter Fruit or Cereal: ", 's');
 
 if userInput == "Fruit"
     % Ask User for Type of Fruit
-    userInput2 = input("What type of fruit do you want?");
+    userInput2 = input("What type of fruit do you want?", 's');
     if (userInput2 ~= "Apple" && userInput2 ~= "Orange" && userInput2 ~= "Banana")
         % INVALID INPUT
     else
@@ -26,13 +26,17 @@ if userInput == "Fruit"
            % Acquire a single image.
            rgbImage = snapshot(cam);
 
-           [fruit, meanHue] = colorsegmentation(rgbImage);
-
-           imshow(rgbImage)
-
+           [fruit, meanHue, BB] = colorsegmentation(rgbImage);
+%            figure, imshow(rgbImage)
+            h = imshow(rgbImage);
+            imshow(rgbImage, 'Parent', h.Parent);
+            
            if count == 7
                % DO SOMETHING
                title(fruit + " (" + meanHue + ")");
+               rectangle('Position', [BB(1),BB(2),BB(3),BB(4)],...
+                 'EdgeColor','r','LineWidth',2 )
+                break;
                if recentAssessment ~= fruit
                    count = 0;
                    title("Calculating");

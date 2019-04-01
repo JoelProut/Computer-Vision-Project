@@ -1,4 +1,4 @@
-function [fruit, meanHue] = colorsegmentation(I)
+function [fruit, meanHue , BB] = colorsegmentation(I)
 %figure, imshow(I), title("Apple");
 
 lab_img = rgb2lab(I);
@@ -24,8 +24,13 @@ hsv = rgb2hsv(cluster);
 
 
 %% Display HSV & Binary Images
-%figure, subplot(2,3,1), imshow(cluster), title("Objects in Cluster");
-%subplot(2,3,2), imshow(bin), title("binary");
+% figure, subplot(2,3,1), imshow(cluster), title("Objects in Cluster");
+% subplot(2,3,2), imshow(bin), title("binary");
+
+st = regionprops(bin,'all');
+BB = st.BoundingBox;
+
+
 %subplot(2,3,3), imshow(h), title("h");
 
 % Iterate through the cluster image, wherever the binary image is 1
