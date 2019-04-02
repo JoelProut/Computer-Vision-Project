@@ -2,7 +2,7 @@ clc; clear all; close all;
 %Capture Test
 webcamlist
 %Type in name from list
-camName = 'Integrated Webcam';
+camName = 'USB2.0 PC CAMERA';
 %Create a webcam object
 cam = webcam(camName);
 %view camera live feed
@@ -34,9 +34,11 @@ if userInput == "Fruit"
            if count == 7
                % DO SOMETHING
                title(fruit + " (" + meanHue + ")");
+               if (userInput2 == recentAssessment)
                rectangle('Position', [BB(1),BB(2),BB(3),BB(4)],...
                  'EdgeColor','r','LineWidth',2 )
                 break;
+               end
                if recentAssessment ~= fruit
                    count = 0;
                    title("Calculating");

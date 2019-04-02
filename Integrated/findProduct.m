@@ -17,14 +17,14 @@ else
     return; % Returns out of function
 end
 
-template = rgb2gray(template);
+templateGrey = rgb2gray(template);
 % figure, imshow(template),title("template");
-scene = rgb2gray(scene);
+sceneGrey = rgb2gray(scene);
 % figure, imshow(scene), title("scene");
 
 %% Feature Detection
-tempPoints = detectSURFFeatures(template);
-scenePoints = detectSURFFeatures(scene);
+tempPoints = detectSURFFeatures(templateGrey);
+scenePoints = detectSURFFeatures(sceneGrey);
 % %Strongest template features
 % figure, imshow(template), title('100 Strongest Feature Points')
 % hold on;
@@ -37,18 +37,20 @@ scenePoints = detectSURFFeatures(scene);
 % hold off;
 
 %% Feature Descriptors
-tempFeatures = extractFeatures(template, tempPoints);
-sceneFeatures = extractFeatures(scene, scenePoints);
+tempFeatures = extractFeatures(templateGrey, tempPoints);
+sceneFeatures = extractFeatures(sceneGrey, scenePoints);
 featurePairs = matchFeatures(tempFeatures, sceneFeatures);
 matchedTempPoints = tempPoints(featurePairs(:,1),:);
 matchedScenePoints = scenePoints(featurePairs(:,2),:);
 % figure, showMatchedFeatures(template, scene, matchedTempPoints, matchedScenePoints, 'montage');
 % title('Matched Points with Outliers');
 %% Locate object and remove outlying matches
-if size(matchedTempPoints,1) >= 4 && size(matchedTempPoints,1) >= 4
-    [tform, inlierTempPoints, inlierScenePoints] = estimateGeometricTransform(matchedTempPoints, matchedScenePoints, 'projective','MaxDistance',20);
-
-% figure, showMatchedFeatures(template, scene, inlierTempPoints, inlierScenePoints, 'montage');
+if size(featurePairs,1) >= 20
+    [tform, inlierTempPoints, inlierScenePoints,status] =...
+        estimateGeometricTransform(matchedTempPoints, matchedScenePoints, 'projective','MaxDistance',15);
+    disp(status);
+%      if status == 0
+         %showMatchedFeatures(template, scene, inlierTempPoints, inlierScenePoints, 'montage');
 %% Box image using a transformation matrix
         boxPolygon = [1, 1;... % top-left
         size(template, 2), 1;... % top-right
@@ -57,12 +59,21 @@ if size(matchedTempPoints,1) >= 4 && size(matchedTempPoints,1) >= 4
         1, 1]; % top-left again to close the polygon
 	
         newBoxPolygon = transformPointsForward(tform, boxPolygon);
-        %Draw a yellow bounding box around the detected image
+       
         imshow(scene),hold on;
+        set(gcf,'MenuBar','none');
+        set(gca,'DataAspectRatioMode','auto');
+        set(gca,'Position',[0 0 1 1]);
         line(newBoxPolygon(:, 1), newBoxPolygon(:, 2), 'Color', 'r');
         hold off;
+%     else
+%         imshow(scene);
+%     end
 else
-    return;
+        imshow(scene);
+        set(gcf,'MenuBar','none');
+        set(gca,'DataAspectRatioMode','auto');
+        set(gca,'Position',[0 0 1 1]);
 end
 
 
